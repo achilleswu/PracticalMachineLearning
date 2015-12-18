@@ -1,0 +1,26 @@
+---
+title: "PracticalMachineLearning"
+author: "Qiang Wu"
+date: "December 17, 2015"
+output: html_document
+---
+
+1. Load Data
+
+```{r, echo=TRUE, cache=TRUE}
+library(caret)
+training<-read.table("pml-training.csv", header=TRUE, sep=",")
+testing<-read.table("pml-testing.csv", header=TRUE, sep=",")
+```
+
+2. Clean data, remove na
+
+```{r, echo=FALSE}
+i<-!apply(is.na(training), 2, any)
+j<-!apply(is.na(testing), 2, any)
+k<-(i&j)
+training<-training[,k]
+testing<-testing[,k]
+```
+
+3. To train/predict, we don't need username, timestamp.
