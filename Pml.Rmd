@@ -15,7 +15,7 @@ testing<-read.table("pml-testing.csv", header=TRUE, sep=",")
 
 2. Clean data, remove na
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 i<-!apply(is.na(training), 2, any)
 j<-!apply(is.na(testing), 2, any)
 k<-(i&j)
@@ -23,4 +23,46 @@ training<-training[,k]
 testing<-testing[,k]
 ```
 
-3. To train/predict, we don't need username, timestamp.
+3. Also, we don't need username, timestamp, number window as feautre, so we limit our feautres to 52.
+```{r, echo=TRUE, cache=TRUE}
+training<-training[,8:60]
+testing<-testing[,8:60]
+```
+
+3. Seperate training to training and validation
+```{r, echo=TRUE, cache=TRUE}
+inTrain<-createDataPartition(y=training$classe, p=0.7, list=FALSE)
+train1<-training[inTrain,]
+validation<-training[-inTrain,]
+```
+
+4. Now train with different models.
+```{r, echo=TRUE, cache=TRUE}
+table(training$classe)
+```
+
+Since there are multiple classes, I will skip glm method.
+
+```{r, echo=TRUE, cache=TRUE}
+set.seed(1235)
+rfFit<-train(classe~., method="rf", data=train1)
+pred<-predict(rfFit, validation)
+table(pred, validation$classe)
+rfAccu<-sum(predict(rfFit, validation) == validation$classe)/length(validation$classe)
+rfAccu
+```
+
+```{r, echo=TRUE, cache=TRUE}
+set.seed(1235)
+gbmFit<-train(classe~., method="gbm", data=train1)
+pred<-predict(gbmFit, validation)
+table(pred, validation$classe)
+gbmAccu<-sum(predict(gbmFit, validation) == validation$classe)/length(validation$classe)
+gbmAccu
+```
+
+Since rf accurancy is better than gbm, I will use rf to predict testing.
+```{r, echo=TRUE, cache=TRUE}
+answers<-predict(rfFit, testing)
+answers
+```
